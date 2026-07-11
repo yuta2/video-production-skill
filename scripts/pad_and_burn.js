@@ -25,7 +25,7 @@ if(mode==='pad'){
   const files=fs.readdirSync(SRC).filter(f=>/^slide_\d+\.png$/i.test(f)).sort();
   for(const f of files){
     const inp=path.join(SRC,f), outp=path.join(OUT,f);
-    execSync(`"${FFMPEG}" -y -i "${inp}" -vf "scale=1410:940:flags=lanczos,pad=1920:1080:255:0:color=white" "${outp}"`,{stdio:'pipe'});
+    execSync(`"${FFMPEG}" -y -i "${inp}" -vf "scale=1410:940:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2:color=white" "${outp}"`,{stdio:'pipe'});
     console.log(`padded ${f}`);
   }
   console.log(`Done: padded ${files.length} slides.`);
@@ -34,14 +34,14 @@ else if(mode==='burn'){
   const srt=path.join(DIR,'subtitles_aligned.srt');
   const vin=path.join(DIR,'video.mp4');
   const vout=path.join(DIR,'video_sub.mp4');
-  // dark text inside the white bottom band; FontSize/MarginV tuned for 1080p 140px band.
-  // For full-bleed dark slides (HTML path) use SUB_FS=14-18, SUB_MV=6-12 and a
-  // BorderStyle=3 boxed style instead — see SKILL.md Step 6.
-  const FS=process.env.SUB_FS||'30', MV=process.env.SUB_MV||'30';
-  const style=`FontName=Microsoft JhengHei,FontSize=${FS},PrimaryColour=&H00202020,OutlineColour=&H00FFFFFF,BorderStyle=1,Outline=1,Shadow=0,MarginV=${MV},Alignment=2`;
+  // Handwritten style with semi-transparent background bar, centered bottom
+  const FS=process.env.SUB_FS||'26', MV=process.env.SUB_MV||'60';
+  const FONT=process.env.SUB_FONT||'ChenYuluoyan 2.0';
+  const FFMPEG_BURN=process.env.FFMPEG_BURN||'ffmpeg';
+  const style=`FontName=${FONT},FontSize=${FS},PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BackColour=&H80000000,BorderStyle=3,Outline=0,Shadow=0,MarginV=${MV},Alignment=2`;
   // ffmpeg subtitles filter needs escaped path on Windows
   const srtEsc=srt.replace(/\\/g,'/').replace(/:/g,'\\:');
-  execSync(`"${FFMPEG}" -y -i "${vin}" -vf "subtitles='${srtEsc}':force_style='${style}'" -c:v libx264 -tune stillimage -pix_fmt yuv420p -c:a copy "${vout}"`,{stdio:'pipe'});
+  execSync(`"${FFMPEG_BURN}" -y -i "${vin}" -vf "subtitles='${srtEsc}':force_style='${style}'" -c:v libx264 -tune stillimage -pix_fmt yuv420p -c:a copy "${vout}"`,{stdio:'pipe'});
   const sz=(fs.statSync(vout).size/1024/1024).toFixed(1);
   console.log(`Burned subtitles -> video_sub.mp4 (${sz} MB)`);
 }

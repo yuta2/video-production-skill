@@ -89,7 +89,7 @@ function synthesize(text, outputPath) {
     const data = JSON.stringify({
       text,
       model_id: MODEL_ID,
-      voice_settings: { stability: 0.5, similarity_boost: 0.75 }
+      voice_settings: { stability: 0.5, similarity_boost: 0.75, speed: config.tts?.speed || 1.0 }
     });
     const req = https.request({
       hostname: 'api.elevenlabs.io',

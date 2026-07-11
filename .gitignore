@@ -10,3 +10,7 @@ verify*.png
 cover_raw.png
 thumbnail.*
 __pycache__/
+
+# ALICE 本地排除（專案資料屬基地 projects/，不進工具 repo）
+projects/
+.DS_Store
